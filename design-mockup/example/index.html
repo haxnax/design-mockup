@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Sprout – onboarding, three proposals</title>
+<!--
+  Example for the design-mockup skill. "Sprout" is a made-up app that reminds you to water your house plants.
+  Replace the fonts, palette, FLOWS, NAMES, PAGES, NOTES, SUBS and COMMON with the current project's.
+  All state lives in the URL hash, e.g. #alt=B&i=3&dark=1&plants=0,3&light=sun&remind=1&sum=2
+-->
+<style>
+@font-face { font-family: Fraunces; src: url(fonts/Fraunces-SemiBold.ttf); font-weight: 600; }
+@font-face { font-family: Inter; src: url(fonts/Inter-Regular.ttf); font-weight: 400; }
+@font-face { font-family: Inter; src: url(fonts/Inter-SemiBold.ttf); font-weight: 600; }
+@font-face { font-family: Inter; src: url(fonts/Inter-Bold.ttf); font-weight: 700; }
+
+/* ---------- The app's palette (replace with the project's theme file) ---------- */
+.light { --bg:#F3F5F2; --card:#FFFFFF; --neutral:#D5DBD6; --text:#17211C; --muted:#56625B;
+  --accent:#A8432A; --on:#FFFFFF; --soft:#F6E3DA; --leaf:#3F7A55; --leaf2:#6FA383; --pot:#C8643E; --pot2:#A8502F;
+  --fill:rgba(118,118,128,.12); --seg-on:#FFFFFF; --sep:rgba(60,60,67,.18); --sw-off:#8E8E93; }
+.dark { --bg:#121513; --card:#1D211F; --neutral:#343A36; --text:#EEF1EE; --muted:#A7B0AA;
+  --accent:#F29B77; --on:#2A1007; --soft:#3A2219; --leaf:#7DBB92; --leaf2:#4F8A66; --pot:#D97C55; --pot2:#B3603D;
+  --fill:rgba(118,118,128,.24); --seg-on:#3A3F3C; --sep:rgba(235,235,245,.16); --sw-off:#8E8E93; }
+
+/* ---------- The page around the phone ---------- */
+body { --p-bg:#E8EBE7; --p-text:#17211C; --p-card:rgba(255,255,255,.75); --p-accent:#A8432A; --p-on:#FFFFFF;
+  margin: 0; font: 15px/1.45 Inter, system-ui, sans-serif; background: var(--p-bg); color: var(--p-text); }
+body.page-dark { --p-bg:#0B0C0B; --p-text:#EEF1EE; --p-card:#1D211F; --p-accent:#F29B77; --p-on:#2A1007; }
+* { box-sizing: border-box; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid #2F7BF5; outline-offset: 2px; }
+
+.top { max-width: 1180px; margin: 0 auto; padding: 24px 24px 8px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
+.top h1 { font: 600 26px/1.2 Fraunces, serif; margin: 0; }
+.seg { display: inline-flex; border: 1.5px solid currentColor; border-radius: 22px; overflow: hidden; }
+.seg button { min-height: 44px; padding: 0 16px; border: 0; background: transparent; cursor: pointer; font-weight: 600; }
+.seg button[aria-pressed="true"] { background: var(--p-accent); color: var(--p-on); }
+.alts { max-width: 1180px; margin: 0 auto; padding: 8px 24px; display: flex; gap: 12px; flex-wrap: wrap; }
+.alt { flex: 1 1 260px; text-align: left; border: 2px solid transparent; border-radius: 16px; padding: 14px 16px; background: var(--p-card); cursor: pointer; }
+.alt[aria-pressed="true"] { border-color: var(--p-accent); }
+.alt b { display: block; font-size: 16px; }
+.alt > span { display: block; font-size: 14px; opacity: .85; }
+.tag { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 10px; background: var(--p-accent); color: var(--p-on); font-size: 12px; font-weight: 600; vertical-align: 2px; }
+
+.stage { max-width: 1180px; margin: 0 auto; padding: 16px 24px 48px; display: flex; gap: 40px; flex-wrap: wrap; align-items: flex-start; justify-content: center; }
+.notes { flex: 1 1 340px; max-width: 520px; }
+.notes h2 { font: 600 20px/1.3 Fraunces, serif; margin: 0 0 8px; }
+.notes ul { padding-left: 20px; margin: 0 0 16px; }
+.notes li { margin: 6px 0; }
+.flowmap, .subpick { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; padding: 0; list-style: none; }
+.flowmap li { margin: 0; }
+.flowmap button, .subpick button { min-height: 36px; padding: 0 12px; border-radius: 18px; border: 1.5px solid currentColor; background: transparent; cursor: pointer; font-size: 13px; font-weight: 600; }
+.flowmap button[aria-current="step"], .subpick button[aria-pressed="true"] { background: var(--p-accent); color: var(--p-on); border-color: var(--p-accent); }
+.small { font-size: 13px; opacity: .8; }
+
+/* ---------- The phone: iPhone 390 x 844 pt, safe area 47 top and 34 bottom ---------- */
+/* The phone is scaled down to always fit the window (fitPhone). The wrapper takes the scaled size so the layout stays right. */
+.phone-wrap { --s: 1; width: calc(414px * var(--s)); height: calc(868px * var(--s)); flex: none; }
+.phone { width: 414px; height: 868px; padding: 12px; border-radius: 60px; background: #0E0F0E; box-shadow: 0 20px 50px rgba(0,0,0,.25); transform: scale(var(--s)); transform-origin: top left; }
+.screen { position: relative; width: 390px; height: 844px; border-radius: 48px; overflow: hidden; background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+.notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 150px; height: 32px; background: #000; border-radius: 0 0 20px 20px; z-index: 5; }
+.status { height: 47px; flex: none; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 30px 6px; font-size: 14px; font-weight: 600; }
+.home { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; border-radius: 3px; background: var(--text); opacity: .9; }
+.body { flex: 1; overflow-y: auto; padding: 8px 24px 16px; scrollbar-width: none; }
+.body::-webkit-scrollbar { display: none; }
+.foot { flex: none; padding: 12px 24px 46px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
+
+.steps { display: flex; align-items: center; gap: 10px; height: 44px; margin-bottom: 8px; }
+.back { width: 44px; height: 44px; border: 0; background: var(--fill); border-radius: 22px; cursor: pointer; display: grid; place-items: center; color: var(--text); flex: none; }
+.dots { flex: 1; display: flex; gap: 6px; }
+.dots i { flex: 1; height: 4px; border-radius: 2px; background: var(--neutral); }
+.dots i.on { background: var(--accent); }
+.stepno { font-size: 14px; color: var(--muted); white-space: nowrap; }
+
+h2.h { font: 600 28px/1.15 Fraunces, serif; margin: 6px 0 6px; letter-spacing: -.2px; }
+h2.h.big { font-size: 34px; }
+p.lead { margin: 0 0 16px; color: var(--muted); font-size: 16px; }
+.label { font-size: 13px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; color: var(--muted); margin: 20px 0 8px; }
+
+.btn { min-height: 54px; border-radius: 27px; border: 0; font-size: 17px; font-weight: 600; cursor: pointer; width: 100%; }
+.btn.pri { background: var(--accent); color: var(--on); }
+.btn.sec { background: var(--fill); color: var(--text); }
+.btn:disabled { opacity: .4; cursor: default; }
+.link { color: var(--accent); font-size: 14px; text-align: center; text-decoration: underline; text-underline-offset: 3px; background: none; border: 0; min-height: 44px; cursor: pointer; }
+
+.hero { border-radius: 24px; background: linear-gradient(160deg, var(--soft), var(--bg)); margin: 4px 0 24px; }
+.hero svg { display: block; width: 100%; height: auto; }
+
+/* Plant tiles: multi-select */
+.plants { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+.plant { position: relative; min-height: 104px; border-radius: 16px; border: 0; background: var(--card); color: var(--text); cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 12px 12px; text-align: left; box-shadow: inset 0 0 0 1px var(--sep); }
+.plant svg { flex: none; }
+.plant b { display: block; font-size: 16px; }
+.plant small { display: block; font-size: 13px; color: var(--muted); }
+.plant[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--accent); }
+.plant .tick { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; border-radius: 12px; flex: none; display: grid; place-items: center; box-shadow: inset 0 0 0 1.5px var(--muted); }
+.plant[aria-pressed="true"] .tick { background: var(--accent); color: var(--on); box-shadow: none; }
+
+/* Segmented control, as in iOS */
+.segc { display: flex; background: var(--fill); border-radius: 12px; padding: 2px; gap: 2px; }
+.segc button { flex: 1; min-height: 56px; border: 0; border-radius: 10px; background: transparent; color: var(--text); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-weight: 600; font-size: 15px; }
+.segc button small { font-weight: 400; font-size: 12px; color: var(--muted); }
+.segc button[aria-pressed="true"] { background: var(--seg-on); box-shadow: 0 1px 3px rgba(0,0,0,.14); }
+
+.sum { margin-top: 16px; padding: 14px 16px; border-radius: 14px; background: var(--soft); display: flex; gap: 10px; align-items: flex-start; color: var(--accent); }
+.sumtxt { color: var(--text); }
+.sumtxt b { display: block; font-size: 16px; }
+.sumtxt span { color: var(--muted); font-size: 14px; }
+
+/* Grouped rows */
+.group { background: var(--card); border-radius: 12px; overflow: hidden; }
+.row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 56px; }
+.row + .row { border-top: .5px solid var(--sep); }
+.row .ic { width: 36px; height: 36px; border-radius: 10px; background: var(--soft); display: grid; place-items: center; flex: none; }
+.row div { flex: 1; min-width: 0; }
+.row b { display: block; font-size: 16px; font-weight: 600; }
+.row span { color: var(--muted); font-size: 14px; }
+.row em { font-style: normal; font-weight: 600; color: var(--accent); white-space: nowrap; }
+
+/* Week strip */
+.week { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 4px; background: var(--card); border-radius: 12px; padding: 10px 6px; text-align: center; }
+.week div { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 76px; }
+.week small { font-size: 12px; color: var(--muted); }
+.week b { font-size: 16px; }
+.week .today b { color: var(--accent); }
+.week i { width: 8px; height: 8px; border-radius: 4px; background: var(--leaf); display: block; }
+.next { background: var(--card); border-radius: 20px; padding: 20px; text-align: center; }
+.next svg { margin: 0 auto 6px; display: block; }
+.next b { display: block; font: 600 24px/1.2 Fraunces, serif; }
+.next span { color: var(--muted); }
+
+/* Reminder: switch and notification on the lock screen */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--card); border-radius: 12px; padding: 4px 8px 4px 16px; min-height: 52px; margin-top: 10px; }
+.toggle-row span { font-size: 17px; }
+.switch { width: 64px; height: 44px; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; flex: none; }
+.switch i { width: 51px; height: 31px; border-radius: 16px; background: var(--sw-off); position: relative; display: block; }
+.switch i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 4px rgba(0,0,0,.2); transition: left .2s; }
+.switch[aria-checked="true"] i { background: var(--leaf); }
+.switch[aria-checked="true"] i::after { left: 22px; }
+.perm { font-size: 13px; color: var(--muted); margin: 8px 2px 0; }
+.lock { position: relative; border-radius: 20px; overflow: hidden; padding: 16px 10px; background: linear-gradient(150deg, #6FA383, #C8643E 70%, #E9C9A8); }
+.dark .lock { background: linear-gradient(150deg, #24402F, #6E3420 70%, #3B2A1E); }
+.notif { position: relative; border-radius: 18px; padding: 11px 12px; display: flex; gap: 10px; align-items: flex-start; background: rgba(242,242,244,.92); color: #17211C; box-shadow: 0 4px 16px rgba(0,0,0,.18); }
+.dark .notif { background: rgba(44,44,46,.92); color: #F5F5F7; }
+.notif .appic { width: 38px; height: 38px; border-radius: 9px; flex: none; }
+.n-txt { flex: 1; min-width: 0; font-size: 14px; line-height: 1.3; }
+.n-top { display: flex; justify-content: space-between; }
+.n-top time { font-size: 13px; color: #55595C; }
+.dark .n-top time { color: #AEAEB2; }
+.n-txt > b { display: block; }
+@media (prefers-reduced-motion: reduce) { .switch i::after { transition: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Onboarding – three proposals</h1>
+  <div class="seg" role="group" aria-label="Page theme (phone appearance)">
+    <button type="button" id="pl" aria-pressed="true">Light</button>
+    <button type="button" id="pd" aria-pressed="false">Dark</button>
+  </div>
+</header>
+<nav class="alts" aria-label="Proposals">
+  <button type="button" class="alt" data-alt="A" aria-pressed="true"><b>A · 3 steps <span class="tag">Recommended</span></b><span>Plants → light → done. The reminder is turned on from the last screen.</span></button>
+  <button type="button" class="alt" data-alt="B" aria-pressed="false"><b>B · 4 steps</b><span>The reminder gets its own screen with a time picker and a preview.</span></button>
+  <button type="button" class="alt" data-alt="C" aria-pressed="false"><b>C · 2 steps</b><span>Fastest: plants and light on the same screen.</span></button>
+</nav>
+<main class="stage">
+  <div class="phone-wrap" id="phonewrap"><div class="phone"><div class="screen light" id="screen" aria-label="Phone" role="region"></div></div></div>
+  <section class="notes" id="notes" aria-live="polite"></section>
+</main>
+
+<script>
+// ---------- Data (made-up sample data) ----------
+const TODAY = new Date(2026, 10, 23); // a Monday
+const PLANTS = [
+  { name: 'Monstera', every: 7 }, { name: 'Pilea', every: 6 }, { name: 'Cactus', every: 21 },
+  { name: 'Fern', every: 4 }, { name: 'Ficus', every: 8 }, { name: 'Orchid', every: 10 },
+];
+const LIGHT = { shade: { name: 'Shade', hint: 'north window', f: 1.4 }, half: { name: 'Part sun', hint: 'east/west', f: 1 }, sun: { name: 'Sun', hint: 'south window', f: .7 } };
+const TIMES = { morning: ['Morning', '8 AM'], lunch: ['Noon', '12 PM'], evening: ['Evening', '7 PM'] };
+const WDAY = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+// Each proposal is a list of screens. Start has no step number.
+const FLOWS = {
+  A: ['start', 'plants', 'light', 'done'],
+  B: ['start', 'plants', 'light', 'remind', 'done'],
+  C: ['start', 'both', 'done'],
+};
+const NAMES = { start: 'Start', plants: 'Plants', light: 'Light', both: 'Plants and light', remind: 'Reminder', done: 'Done' };
+
+const s = { alt: 'A', i: 0, pageDark: false, picked: [0, 3], light: 'half', remind: false, time: 'morning', sum: 1 };
+
+// ---------- Helpers ----------
+const $ = q => document.querySelector(q);
+const flow = () => FLOWS[s.alt];
+const page = () => flow()[s.i];
+const days = p => Math.max(1, Math.round(PLANTS[p].every * LIGHT[s.light].f));
+const inDays = n => n === 1 ? 'tomorrow' : 'in ' + n + ' days';
+const every = n => n === 1 ? 'every day' : 'every ' + n + ' days';
+const ic = (name, size = 20) => {
+  const p = { back: 'M15 18l-6-6 6-6', next: 'M9 18l6-6-6-6', check: 'M5 12.5l4.5 4.5L19 7.5', drop: 'M12 3.5c3 4 6 7.2 6 10.5a6 6 0 0 1-12 0c0-3.3 3-6.5 6-10.5z',
+    sun: 'M12 4v2M12 18v2M4 12h2M18 12h2M6.3 6.3l1.4 1.4M16.3 16.3l1.4 1.4M6.3 17.7l1.4-1.4M16.3 7.7l1.4-1.4M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z',
+    half: 'M12 3a9 9 0 1 0 0 18V3z M12 3a9 9 0 0 1 0 18', shade: 'M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z', bell: 'M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0' }[name];
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${p}"/></svg>`;
+};
+// A small potted plant. The colours come from the palette, so it follows light/dark mode.
+const pot = (size = 44, kind = 0) => {
+  const leaves = [
+    '<ellipse cx="22" cy="14" rx="7" ry="11" fill="var(--leaf)"/><ellipse cx="13" cy="18" rx="5" ry="9" transform="rotate(-35 13 18)" fill="var(--leaf2)"/><ellipse cx="31" cy="18" rx="5" ry="9" transform="rotate(35 31 18)" fill="var(--leaf2)"/>',
+    '<circle cx="15" cy="15" r="6" fill="var(--leaf)"/><circle cx="29" cy="13" r="6" fill="var(--leaf2)"/><circle cx="22" cy="8" r="5" fill="var(--leaf)"/><path d="M22 26V12M15 26l0-10M29 26l0-12" stroke="var(--leaf)" stroke-width="1.5"/>',
+    '<rect x="17" y="4" width="10" height="24" rx="5" fill="var(--leaf)"/><rect x="9" y="12" width="7" height="12" rx="3.5" fill="var(--leaf2)"/><rect x="28" y="9" width="7" height="12" rx="3.5" fill="var(--leaf2)"/>',
+  ][kind % 3];
+  return `<svg width="${size}" height="${size}" viewBox="0 0 44 44" aria-hidden="true">${leaves}<path d="M10 27h24l-3 15H13z" fill="var(--pot)"/><rect x="8" y="25" width="28" height="5" rx="2" fill="var(--pot2)"/></svg>`;
+};
+const heroArt = () => `<svg viewBox="0 0 342 220" role="img" aria-label="Three potted plants on a windowsill">
+  <rect x="24" y="22" width="294" height="150" rx="10" fill="var(--card)" opacity=".7"/><path d="M171 22v150M24 97h294" stroke="var(--neutral)" stroke-width="4"/>
+  <circle cx="262" cy="58" r="18" fill="#F3C45A" opacity=".85"/>
+  <rect x="12" y="170" width="318" height="14" rx="4" fill="var(--pot2)" opacity=".55"/>
+  <g transform="translate(40 66) scale(2.4)">${pot(44, 0).replace(/<\/?svg[^>]*>/g, '')}</g>
+  <g transform="translate(135 92) scale(1.8)">${pot(44, 1).replace(/<\/?svg[^>]*>/g, '')}</g>
+  <g transform="translate(222 98) scale(1.65)">${pot(44, 2).replace(/<\/?svg[^>]*>/g, '')}</g></svg>`;
+
+function steps() {
+  const n = flow().length - 1, at = s.i;
+  return `<div class="steps"><button type="button" class="back" data-go="back" aria-label="Back">${ic('back', 24)}</button>
+    <div class="dots" role="img" aria-label="Step ${at} of ${n}">${Array.from({ length: n }, (_, k) => `<i class="${k < at ? 'on' : ''}"></i>`).join('')}</div>
+    <span class="stepno" aria-hidden="true">${at} of ${n}</span></div>`;
+}
+function plantGrid() {
+  return `<div class="plants" role="group" aria-label="Plants">${PLANTS.map((p, k) => {
+    const on = s.picked.includes(k);
+    return `<button type="button" class="plant" data-plant="${k}" aria-pressed="${on}">${pot(36, k)}<span><b>${p.name}</b><small>${every(days(k))}</small></span><span class="tick">${on ? ic('check', 16) : ''}</span></button>`;
+  }).join('')}</div>`;
+}
+function lightPicker() {
+  return `<div class="segc" role="group" aria-label="Light">${Object.entries(LIGHT).map(([k, l]) =>
+    `<button type="button" data-light="${k}" aria-pressed="${s.light === k}">${ic(k, 20)}${l.name}<small>${l.hint}</small></button>`).join('')}</div>`;
+}
+function soonest() {
+  if (!s.picked.length) return null;
+  return s.picked.map(k => [k, days(k)]).sort((a, b) => a[1] - b[1])[0];
+}
+function summary() {
+  const f = soonest();
+  if (!f) return `<div class="sum" role="status">${ic('drop')}<div class="sumtxt"><b>Pick at least one plant</b><span>Otherwise there is nothing to remind you about.</span></div></div>`;
+  return `<div class="sum" role="status">${ic('drop')}<div class="sumtxt"><b>First up: ${PLANTS[f[0]].name}, ${inDays(f[1])}</b><span>Counted from today · ${LIGHT[s.light].name.toLowerCase()}</span></div></div>`;
+}
+function notifPreview() {
+  const f = soonest(), t = TIMES[s.time][1];
+  const what = f ? `Time to water your ${PLANTS[f[0]].name.toLowerCase()}` : 'Time to water';
+  return `<div class="lock" role="img" aria-label="Example notification: Sprout, ${t}. ${what}. Check with a finger: is the soil dry an inch down?">
+    <div class="notif" aria-hidden="true"><svg class="appic" viewBox="0 0 38 38"><rect width="38" height="38" rx="9" fill="#A8432A"/><path d="M19 8c4 5 8 9.5 8 13.5a8 8 0 0 1-16 0C11 17.5 15 13 19 8z" fill="#FFFFFF"/></svg>
+    <div class="n-txt"><div class="n-top"><b>Sprout</b><time>${t}</time></div><b>${what}</b><span>Check with a finger: is the soil dry an inch down?</span></div></div></div>`;
+}
+function reminderToggle() {
+  return `<div class="toggle-row"><span id="lbl-rem">Remind me</span>
+    <button type="button" class="switch" role="switch" aria-checked="${s.remind}" aria-labelledby="lbl-rem" data-remind><i></i></button></div>
+    ${s.remind ? '<p class="perm">Your phone will now ask for permission to show notifications.</p>' : ''}`;
+}
+function timePicker() {
+  return `<div class="segc" role="group" aria-label="Reminder time">${Object.entries(TIMES).map(([k, [n, t]]) =>
+    `<button type="button" data-time="${k}" aria-pressed="${s.time === k}">${n}<small>${t}</small></button>`).join('')}</div>`;
+}
+
+// ---------- Screens ----------
+const PAGES = {
+  start: () => ({ body: `<div class="hero">${heroArt()}</div><h2 class="h big">Happy plants, nothing to remember</h2><p class="lead">Sprout tells you when each plant is thirsty.</p>`,
+    foot: `<button type="button" class="btn pri" data-go="next">Get started</button><button type="button" class="btn sec">I already have an account</button><button type="button" class="link">Privacy policy</button>` }),
+  plants: () => ({ body: steps() + `<h2 class="h">Which plants do you have?</h2><p class="lead">Pick all that apply. You can add more later.</p>${plantGrid()}`,
+    foot: `<button type="button" class="btn pri" data-go="next" ${s.picked.length ? '' : 'disabled'}>${s.picked.length ? 'Next' : 'Pick at least one'}</button>` }),
+  light: () => ({ body: steps() + `<h2 class="h">How much light do they get?</h2><p class="lead">Soil dries faster in the sun, so we water more often.</p>${lightPicker()}${summary()}`,
+    foot: `<button type="button" class="btn pri" data-go="next">Next</button>` }),
+  both: () => ({ body: steps() + `<h2 class="h">Your plants</h2><p class="lead">Pick your plants and how much light they get.</p>${plantGrid()}<div class="label">Light</div>${lightPicker()}${summary()}`,
+    foot: `<button type="button" class="btn pri" data-go="next" ${s.picked.length ? '' : 'disabled'}>${s.picked.length ? 'Next' : 'Pick at least one'}</button>` }),
+  remind: () => ({ body: steps() + `<h2 class="h">Want a reminder?</h2><p class="lead">A short notification on days something needs water.</p>
+      <div class="label">Time of day</div>${timePicker()}<div class="label">This is how it looks</div>${notifPreview()}${reminderToggle()}`,
+    foot: `<button type="button" class="btn pri" data-go="next">Next</button>` }),
+  done: () => {
+    const list = s.picked.map(k => [k, days(k)]).sort((a, b) => a[1] - b[1]);
+    let block;
+    if (!list.length) block = summary();
+    else if (s.sum === 2) { // Week strip
+      block = `<div class="week" role="img" aria-label="Coming week: ${list.filter(([, d]) => d <= 6).map(([k, d]) => PLANTS[k].name + ' ' + inDays(d)).join(', ') || 'no watering'}">${Array.from({ length: 7 }, (_, n) => {
+        const d = new Date(TODAY); d.setDate(d.getDate() + n);
+        const due = list.filter(([, every]) => n > 0 && n % every === 0).length;
+        return `<div class="${n ? '' : 'today'}" aria-hidden="true"><small>${n ? WDAY[d.getDay()] : 'Today'}</small><b>${d.getDate()}</b>${'<i></i>'.repeat(due)}</div>`;
+      }).join('')}</div>`;
+    } else if (s.sum === 3) { // Next only
+      const [k, d] = list[0];
+      block = `<div class="next">${pot(64, k)}<b>${PLANTS[k].name}, ${inDays(d)}</b><span>${list.length > 1 ? '+ ' + (list.length - 1) + ' more ' + (list.length > 2 ? 'plants' : 'plant') + ' on your list' : 'Your only plant so far'}</span></div>`;
+    } else { // List
+      block = `<div class="group">${list.map(([k, d]) => `<div class="row"><span class="ic">${pot(28, k)}</span><div><b>${PLANTS[k].name}</b><span>${every(d)}</span></div><em>${inDays(d)}</em></div>`).join('')}</div>`;
+    }
+    const rem = s.alt === 'B' ? `<p class="perm">${s.remind ? 'Reminder at ' + TIMES[s.time][1] + ' on days something needs water.' : 'The reminder is off. Turn it on in Settings.'}</p>`
+      : `<div class="label">Reminder</div>${notifPreview()}${reminderToggle()}`;
+    return { body: steps() + `<h2 class="h">All set</h2><p class="lead">We count from today. Watered early? Just tap the plant.</p>${block}${rem}`,
+      foot: `<button type="button" class="btn pri" data-go="finish">Go to my plants</button>` };
+  },
+};
+
+// ---------- Notes beside the phone ----------
+const NOTES = {
+  A: `<h2>A · 3 steps (recommended)</h2><p>The reminder is offered only once the plants are known, so the sample notification can name a real plant. One step shorter than B.</p>`,
+  B: `<h2>B · 4 steps</h2><p>The reminder gets its own screen where you also pick the time. Clearest, but one step longer.</p>`,
+  C: `<h2>C · 2 steps</h2><p>Shortest. Plants and light on one screen, but that screen has to scroll on smaller phones.</p>`,
+};
+// Sub-proposals for a single part of a screen. The first one is the recommended one.
+const SUBS = { done: { title: 'The summary, three proposals', key: 'sum', items: ['List', 'Week strip', 'Next only'] } };
+const COMMON = `<h2>Applies to all three</h2><ul>
+  <li><b>Plants:</b> multi-select tiles. Monstera and fern are preselected, so you can move on right away.</li>
+  <li><b>Light:</b> one choice for all plants. The intervals on the tiles update as soon as you switch.</li>
+  <li><b>Reminder:</b> off by default. The system's notification prompt appears only when you turn it on.</li>
+  <li><b>Last screen:</b> a single button, "Go to my plants". Changes are made with the back arrow or later in the app.</li></ul>
+  <p class="small">Click inside the phone or jump between steps here. Sprout is a made-up app, and the intervals are sample data.</p>`;
+
+// ---------- Render ----------
+function render() {
+  const sc = $('#screen');
+  sc.className = 'screen ' + (s.pageDark ? 'dark' : 'light');
+  const p = PAGES[page()]();
+  sc.innerHTML = `<div class="notch"></div><div class="status" aria-hidden="true"><span>9:41</span><span>5G ▮</span></div>
+    <div class="body" id="body">${p.body}</div><div class="foot">${p.foot}</div><div class="home" aria-hidden="true"></div>`;
+  const sub = SUBS[page()];
+  const subHtml = sub ? `<h2>${sub.title}</h2><div class="subpick" role="group" aria-label="${sub.title}">${sub.items.map((n, k) =>
+    `<button type="button" data-${sub.key}="${k + 1}" aria-pressed="${s[sub.key] === k + 1}">${k + 1}. ${n}${k ? '' : ' (recommended)'}</button>`).join('')}</div>` : '';
+  $('#notes').innerHTML = NOTES[s.alt] + `<ol class="flowmap" aria-label="Steps in proposal ${s.alt}">${flow().map((k, n) =>
+    `<li><button type="button" data-jump="${n}" ${n === s.i ? 'aria-current="step"' : ''}>${n ? n + '. ' : ''}${NAMES[k]}</button></li>`).join('')}</ol>` + subHtml + COMMON;
+  document.body.classList.toggle('page-dark', s.pageDark);
+  $('#pl').setAttribute('aria-pressed', !s.pageDark); $('#pd').setAttribute('aria-pressed', s.pageDark);
+  document.querySelectorAll('.alt').forEach(b => b.setAttribute('aria-pressed', b.dataset.alt === s.alt));
+  writeHash();
+}
+function go(to) {
+  if (to === 'next') s.i = Math.min(flow().length - 1, s.i + 1);
+  else if (to === 'back') s.i = Math.max(0, s.i - 1);
+  else if (to === 'finish') s.i = 0;
+  render(); $('#body').scrollTop = 0;
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t || t.disabled) return;
+  const d = t.dataset, keep = $('#body').scrollTop;
+  if (d.go) return go(d.go);
+  if (d.alt) { s.alt = d.alt; s.i = 0; render(); return; }
+  if (d.jump) { s.i = +d.jump; render(); return; }
+  if (d.sum) { s.sum = +d.sum; render(); return; }
+  if (t.id === 'pl' || t.id === 'pd') { s.pageDark = t.id === 'pd'; render(); return; }
+  if (d.plant) { const k = +d.plant; s.picked = s.picked.includes(k) ? s.picked.filter(x => x !== k) : [...s.picked, k].sort(); }
+  else if (d.light) s.light = d.light;
+  else if (d.time) s.time = d.time;
+  else if (d.remind !== undefined) s.remind = !s.remind;
+  else return;
+  render(); $('#body').scrollTop = keep;
+  // Keep keyboard focus on the same control after the redraw.
+  const [k, v] = Object.entries(d)[0] || [];
+  if (k) { const el = document.querySelector(`[data-${k}="${v}"]`); if (el) el.focus({ preventScroll: true }); }
+});
+
+// ---------- Linkable states ----------
+function writeHash() {
+  const h = new URLSearchParams({ alt: s.alt, i: s.i, dark: +s.pageDark, plants: s.picked.join(','), light: s.light, remind: +s.remind, time: s.time, sum: s.sum });
+  history.replaceState(null, '', '#' + h);
+}
+(function fromHash() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (FLOWS[h.get('alt')]) s.alt = h.get('alt');
+  if (h.has('i')) s.i = Math.max(0, Math.min(+h.get('i'), FLOWS[s.alt].length - 1));
+  if (h.has('dark')) s.pageDark = h.get('dark') === '1';
+  if (h.has('plants')) s.picked = h.get('plants').split(',').filter(x => x !== '').map(Number).filter(n => PLANTS[n]);
+  if (LIGHT[h.get('light')]) s.light = h.get('light');
+  if (h.has('remind')) s.remind = h.get('remind') === '1';
+  if (TIMES[h.get('time')]) s.time = h.get('time');
+  if (h.has('sum')) s.sum = Math.min(3, Math.max(1, +h.get('sum')));
+})();
+
+// Scale the phone so the whole frame fits below the header, with a margin at the bottom. Never above 100 %.
+function fitPhone() {
+  const w = $('#phonewrap'), top = w.getBoundingClientRect().top + window.scrollY;
+  const s = Math.min(1, Math.max(.5, (window.innerHeight - top - 24) / 868), (window.innerWidth - 32) / 414);
+  w.style.setProperty('--s', s.toFixed(3));
+}
+addEventListener('resize', fitPhone);
+render();
+fitPhone();
+</script>
+</body>
+</html>
