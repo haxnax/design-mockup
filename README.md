@@ -23,7 +23,13 @@ The template in `design-mockup/example/` is the onboarding flow of **Sprout**, a
 
 ## Install
 
-**Claude Code**
+**Any agent, with the [skills](https://skills.sh) CLI**
+
+```bash
+npx skills add haxnax/design-mockup
+```
+
+**Claude Code, by hand**
 
 Copy the `design-mockup` folder into one of these:
 
